@@ -174,7 +174,6 @@ data = parser.read(
 
 <summary> <em>About <code>blocks</code>, <code>features</code>, <code>dimensions</code> arguments</em> (click to expand) </summary>
 
-> [!TIP]
 > Values for  `blocks`, `features`, `dimensions` arguments must be determined manually from what was specified in `.DATA` file for `RPTRST` and `RPTMAPS` keywords
 
 
@@ -200,7 +199,6 @@ data = parser.read(offset=10)
 
 <summary> <em>About <code>offset</code> parameter</em> (click to expand) </summary>
 
-> [!TIP]
 > The same idea can be used for other parsers but with a different `offset` value. Check the type annotation for `offset` argument in each case in order to determine the possible values - they may be different depending on the number of `objects` (e.g. wells, connections, groups, ...), though the exact pattern rule can not be determined as for now.
 
 

@@ -4,7 +4,7 @@
   <p><strong>TNavigator simulation files parser and processor in Python.</strong></p>
 
   [![Changelog](https://img.shields.io/badge/changelog-CHANGELOG.md-orange?logo=markdown)](./CHANGELOG.md)
-  [![License](https://img.shields.io/badge/license-MIT-green)]()
+  [![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
 </div>
 
 

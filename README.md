@@ -1,68 +1,78 @@
-# Omega Parser
+<div align="center">
+  <!-- <img src="logo.png" width="200" /> -->
+  <h1>Omega Parser</h1>
+  <p><strong>TNavigator simulation files parser and processor in Python.</strong></p>
 
-A modern Python library for cleaning, parsing TNavigator simulation files, RSM and UNSMRY summary files with possible data extraction and comprehensive configuration support, CLI interface, event-driven scenario management.
+  [![Changelog](https://img.shields.io/badge/changelog-CHANGELOG.md-orange?logo=markdown)](./CHANGELOG.md)
+  [![License](https://img.shields.io/badge/license-MIT-green)]()
+</div>
+
+
+## Description
+
+A Python library for cleaning, parsing TNavigator input and output files with possible data extraction and data managment with a comprehensive configuration support.
+
+<br>
 
 ## Features
 
-- 🛢️ TNavigator simulation file cleaning and parsing (at least 66 keyword parsers: PVDG, WECON, DATES, GRUPTREE, VFPPROD, UDQ, WELSPECS, COMPDAT, WCONPROD, etc.)
-- 📊 RSM summary file parsing with time-series data extraction
-- 📊 UNSMRY summary file parsing with time-series data extraction
-- 📊 Binary .res files parsing with time-series data extraction
-- ⚡ ContextManager for sequential simulation DATA file data processing with state management 
-- ⚙️ Pipeline1 - easy way clean, parse and preprocess both input and output TNavigator data via YAML configuration file
+- 🛢️ TNavigator input `DATA` file cleaning and parsing (at least 67 keyword parsers: PVDG, WECON, DATES, GRUPTREE, VFPPROD, UDQ, WELSPECS, COMPDAT, WCONPROD, etc.)
+- 📊 `RSM`, `UNSMRY` summary files and binary `RES` files parsing with time-series data extraction
+- ⚡ `ContextManager` for sequential simulation `DATA` file data processing with state management 
+- ⚙️ `Pipeline1` - easy way clean, parse and preprocess both input and output TNavigator data via YAML configuration file
 - 🛢️ TNavigator full reservoir numerical schema implementation - ready for `numpy` and `torch` arrays
-- 🎯 Event-driven scenario management with parameterized queries (WARNING: needs a review)
 - 🔧 Comprehensive YAML configuration management
-- 🖥️ Full-featured CLI with Click (WARNING: needs an update)
-- 🧪 Complete testing suite with pytest using real reservoir data (WARNING: needs an update)
 - 📝 Type hints and validation with Pydantic
-- 🌐 NetworkX support for graph-based operations
-- 🎨 Code formatting with Black and isort
-- 🔍 Linting with flake8 and type checking with mypy
+
+> [!WARNING]
+> The following features might not work correctly and needs refactoring:
+> - 🎯 Event-driven scenario management with parameterized queries
+> - 🖥️ Full-featured CLI with Click
+> - 🧪 Complete testing suite with pytest using real reservoir data
+
+<br>
 
 ## Installation
 
 **Requirements**: Python 3.10.15 or higher
 
-### From Source
+<details>
+<summary> <em><strong> I. Install from Source </strong></em> (click to expand)  </summary>
 
 ```bash
 git clone https://github.com/GitHub-User228/omega-parser.git
 cd omega-parser
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Install package in development mode
-pip install -e ".[dev]"
+make install
 ```
 
-### Using pip (when published)
+</details>
+
+<details>
+<summary> <em><strong> II. Using pip (when published) </strong></em> (click to expand)  </summary>
 
 ```bash
 pip install omega-parser
 ```
 
-### For Development
+</details>
+
+<details>
+<summary> <em><strong> III. For Development </strong></em> (click to expand)  </summary>
 
 ```bash
-# Clone and setup development environment
 git clone https://github.com/GitHub-User228/omega-parser.git
 cd omega-parser
-
-# Install all dependencies including development tools
-pip install -r requirements.txt
-pip install -e ".[dev]"
-
-# Or use make
 make install-dev
 ```
 
-## Quick Start
+</details>
 
-### Python API
+<br>
+<br>
 
-#### 1. `Cleaner` & `MainParser` Usage
+## Usage
+
+### 1. `Cleaner` & `MainParser`
 
 ```python
 from pathlib import Path
@@ -85,7 +95,9 @@ dates_data = content.SCHEDULE.timestamps  # Schedule dates with timestamps
 save_pkl(path=Path("output/data.pkl"), data=content)
 ```
 
-#### 2. `RSMParser` & `RSMParserParallel` & `RSMDataExtractor` Usage
+<br>
+
+### 2. `RSMParser` & `RSMParserParallel` & `RSMDataExtractor`
 
 ```python
 from pathlib import Path
@@ -105,7 +117,9 @@ keywords = ['CGPT', 'CBP']
 df_perf = extractor.extract_perforation_data(data=df, keywords=keywords)
 ```
 
-#### 3. `UNSMRYParser` & `UNSMRYDataExtractor` Usage
+<br>
+
+### 3. `UNSMRYParser` & `UNSMRYDataExtractor`
 
 ```python
 from pathlib import Path
@@ -136,16 +150,15 @@ extractor = UNSMRYDataExtractor()
 data = extractor.extract_data(data=data, keywords=keywords, verbose=1)
 ```
 
-#### 4. `OutsolTsMapsResParser` Usage
+<br>
+
+### 4. `OutsolTsMapsResParser`
 
 ```python
 from pathlib import Path
 from omega_parser import OutsolTsMapsResParser
 
 # Parse OutsolTsMaps results file with blocks data
-# PS:
-#   to determine values for `blocks`, `features`, `dimensions`
-#   you must know what was specified in .DATA file for corresponding keywords
 parser = OutsolTsMapsResParser(data_dir=Path("data/"), verbose=1)
 data = parser.read(
     blocks=12, # OR np.ndarray of shape (n_blocks, 3) with coords OR Path to .xyz file with coords
@@ -157,8 +170,20 @@ data = parser.read(
     dimensions=None, # or like (10, 20, 33) when output_format = 'tensor'
 )
 ```
+<details>
 
-#### 5. `RunStatResParser`, `WellResParser`, `ConnResParser`, `GroupResParser`, `NetworkResParser` Usage
+<summary> <em>About <code>blocks</code>, <code>features</code>, <code>dimensions</code> arguments</em> (click to expand) </summary>
+
+> [!TIP]
+> Values for  `blocks`, `features`, `dimensions` arguments must be determined manually from what was specified in `.DATA` file for `RPTRST` and `RPTMAPS` keywords
+
+
+</details>
+
+
+<br>
+
+### 5. `RunStatResParser`, `WellResParser`, `ConnResParser`, `GroupResParser`, `NetworkResParser`
 
 Here is an example for `RunStatResParser`:
 
@@ -170,110 +195,31 @@ parser = RunStatResParser(data_dir=Path("data/"), verbose=1)
 data = parser.read(offset=10)
 ```
 
-The same idea can be used for other parsers but with a different `offset` value. Check the type annotation for `offset` argument in each case in order to determine the possible values - they may be different depending on the number of `objects` (e.g. wells, connections, groups, ...)
 
-## Configuration
+<details>
 
-The library uses YAML configuration files for parser setup:
+<summary> <em>About <code>offset</code> parameter</em> (click to expand) </summary>
 
-```yaml
-# config/config.yaml
-MainParserConfig:
-  end_keyword: END
-  extensions:
-    - ".vfp"
-    - ".VFP"
-    - ".inc"
-    - ".INC"
-    - ".grdecl"
-    - ".GRDECL"
-    - ".map"
-    - ".MAP"
-    - ".data"
-    - ".DATA"
-  parsers:
-    - UDQParser
-    - PVDGParser
-    - WECONParser
-    - WEFACParser
-    - VFPPRODParser
-    - INCLUDEParser
-    - GRUPTREEParser
-    - DATESParser
-    - TSTEPParser
-    - RESTARTParser
-    - WELSPECSParser
-    - BRANPROPParser
-    - COMPDATParser
-    - WPIMULTParser
-    - WDFACParser
-    - WCONPRODParser
-    - COMPLUMPParser
-    - WVFPDPParser
-
-RSMParserConfig:
-  extensions:
-    - '.rsm'
-    - '.RSM'
-  end_of_file_offset: 1
+> [!TIP]
+> The same idea can be used for other parsers but with a different `offset` value. Check the type annotation for `offset` argument in each case in order to determine the possible values - they may be different depending on the number of `objects` (e.g. wells, connections, groups, ...), though the exact pattern rule can not be determined as for now.
 
 
-RSMParserParallelConfig:
-  extensions:
-    - '.rsm'
-    - '.RSM'
+</details>
 
-UNSMRYParserConfig:
-  extensions:
-    - '.smspec'
-    - '.unsmry'
-    
-# Res file parsers configurations
-OutsolTsMapsResParserConfig:
-  resfile_name: outsol_ts_maps
-RunStatResParserConfig:
-  resfile_name: run_stat
-WellResParserConfig:
-  resfile_name: well
-ConnResParserConfig:
-  resfile_name: conn
-GroupResParserConfig:
-  resfile_name: group
-NetworkResParserConfig:
-  resfile_name: network
+<br>
 
-# Keyword configurations
-PVDGParserConfig:
-  keyword: PVDG
-WECONParserConfig:  
-  keyword: WECON
-```
+### 6. `ContextManager`
 
-### Configuration Options
+The ContextManager provides sequential processing capabilities for TNavigator simulation data from `.DATA` file, managing state transitions through simulation timestamps.
 
-- `MainParserConfig.extensions`: Supported file extensions for TNavigator files
-- `MainParserConfig.parsers`: List of keyword parsers to enable
-- `RSMParserConfig`: Configuration for RSM summary file parsing
-- `RSMParserParallelConfig`: Configuration for RSM summary file parsing in parallel way
-- `UNSMRYParserConfig`: Configuration for UNSMRY summary file parsing
-- `*ResParserConfig`: Individual configuration for a separate .res file parsing
-- `*ParserConfig`: Individual keyword parser configurations
-- Logger configuration in `config/logger.yaml`
-
-## ContextManager
-
-The ContextManager provides sequential processing capabilities for TNavigator simulation data, managing state transitions through simulation timestamps.
-
-### Key Features
-
+<em>**Key features**</em>: 
 - **State Management**: Tracks simulation state across timestamps with proper RESTART handling
-- **Well and Perforations Management**: Monitors well and perforation specifications, constraints, and production controls
+- **Group, Well and Perforation Management**: Monitors group, well and perforation specifications, constraints, and production controls
 - **Network Topology**: Maintains reservoir network structure using NetworkX DiGraph
 - **VFP Tables**: Manages vertical flow performance tables throughout simulation
 - **Data Validation**: Ensures consistency and validates data at each simulation step
 
-### Usage Examples
-
+<em>**Usage Example**</em>:
 ```python
 from omega_parser import ContextManager
 from omega_parser.data.simple import DatafileGroups
@@ -344,9 +290,11 @@ print(f"VFP data: {data[DatafileGroups.vfp]}")
 print(f"UDQ data: {data[DatafileGroups.udq]}")
 ```
 
-## Pipelines 
+<br>
 
-The Pipelines system helps to parse and process TNavigator files in a easy way with a simple config file.
+### 7. Pipelines 
+
+The Pipelines system helps to parse and process TNavigator files in an easy way with a single config file.
 
 In order to use a pipeline, execute the following command in console:
 
@@ -355,16 +303,18 @@ In order to use a pipeline, execute the following command in console:
 python3 -m omega_parser.pipelines.run -p pipeline1 -cf config.yaml
 ```
 
-### Pipeline 1
+#### I. Pipeline 1
 
-Pipeline1 is designed to parse raw .DATA and RESULTS files for either one scenario or more if they are 
-based on the same adapted history model. 
+Pipeline1 is designed to parse raw `.DATA` and `UNSMRY` files for either one scenario or more if they are 
+based on the same history model. 
 
 For each scenario the following files must exist:  
 - `.DATA` files and all included files
 - `result.UNSMRY` and `result.SMSPEC` files
 
-Here is an example of `config.yaml` file:
+<details>
+
+<summary> <em><strong> Configuration File Example </strong></em> (click to expand) </summary>
 
 ```yaml
 default:
@@ -515,12 +465,20 @@ components:
             kwargs:
               table_name: block
 ```
+</details>
 
-### Dataset from Pipeline1
+<br>
 
-Use `Dataset` from `omega_parser.data.dataset` in order to read and transform data processed via `Pipeline1` into a vectorized numpy format - this way the data can be processed much faster (there is also a support for fast merge operations without groupby). 
+#### II. Dataset from Pipeline1
+
+Use `Dataset` from `omega_parser.data.dataset` in order to read and transform data processed via `Pipeline1` into a vectorized `numpy` format - this way the data can be processed much faster with an additional support for fast `merge` operations without `groupby`. 
 
 You will need two YAML configuration files.
+
+<details>
+
+<summary> <em><strong> Data Schema Config </strong></em> (click to expand) </summary> 
+<br>
 
 This config defined data schema for `block`, `perforation`, `well`, `group` and `edge` data groups. You can specify only some of the data groups if needed.
 
@@ -543,8 +501,14 @@ edge:
   features: [VFP_id, ALQ]
 ```
 
-This config file defines directories from which to read the data. The configuration is based on how the `Pipeline1` saves the data. You can specify only some of the data groups if needed.
+</details>
+<br>
+<details>
 
+<summary> <em><strong> Data Path Config </strong></em> (click to expand) </summary>
+<br>
+
+This config file defines directories from which to read the data. The configuration is based on how the `Pipeline1` saves the data. You can specify only some of the data groups if needed.
 
 ```yaml
 data_dir: /artifacts/data
@@ -575,7 +539,10 @@ sources_path_config:
     filename: udq.pkl
 ```
 
-Then follow the python script below in order to initialize the `Dataset`:
+</details>
+<br>
+
+Follow the code below in order to initialize the `Dataset`:
 
 ```python
 from pathlib import Path
@@ -588,11 +555,14 @@ dataset = Dataset.from_parsed_data(
 )
 dataset.add_scenario('v1')
 dataset.add_scenario('v2')
+dataset.add_scenarios(['v3', 'v4'])
 ```
 
 Additionally, `Dataset` has `persistent_data` which is derived from `ContextContent.pkl` stored in `data_dir`
 
-## TNavigator Full Reservoir Numerical Schema
+<br>
+
+### 8. TNavigator Full Reservoir Numerical Schema
 
 Use the implementation of a full reservoir numerical schema in `reservoir/equation.py`.
 
@@ -600,11 +570,16 @@ The schema is fully described below. The equation below works for each block `i`
 
 <img src="docs/TNavSchema.png" alt="Logo" width="1000">
 
-## Query Processing and Event Management (WARNING - needs a review and an updated)
+<br>
+
+### 9. Query Processing and Event Management
+
+>[!WARNING]
+> The related code might not work correctly and needs refactoring
 
 The Query Processing system enables event-driven scenario management for TNavigator simulations, allowing you to modify simulation behavior through parameterized events defined in Excel queries.
 
-### Key Features
+<em>**Key Features**</em>
 
 - **Event Templates**: Define reusable simulation events with TNavigator keyword data
 - **Parameter Validation**: Type-safe parameter handling with constraints and validation
@@ -612,7 +587,7 @@ The Query Processing system enables event-driven scenario management for TNaviga
 - **Date Validation**: Event scheduling with date range constraints
 - **Context Integration**: Seamless integration with baseline simulation contexts
 
-### Usage Examples
+<em>**Usage Example**</em>
 
 ```python
 from pathlib import Path
@@ -644,9 +619,9 @@ updated_context = processor.add_data_to_baseline_context(
 )
 ```
 
-### Event Schema Configuration
+<em>**Event Schema Configuration**</em>
 
-Events are defined in YAML schema files with the following structure:
+Events are defined in YAML schema files with the specific structure:
 
 ```yaml
 # field_events.yaml
@@ -673,7 +648,8 @@ events:
         param_values: ["OPEN", "SHUT", "STOP"]
 ```
 
-### Excel Query Format
+
+<em>**Excel Query Format**</em>
 
 Scenario queries are defined in Excel files with the following columns:
 
@@ -692,7 +668,7 @@ well_constraint_change  | oil_rate_max   | 5000.0      | 2023-06-01 | TRUE
 well_constraint_change  | well_cond      | SHUT        | 2023-12-01 | TRUE
 ```
 
-### Event Template Files
+<em>**Event Template Files**</em>
 
 Event templates are standard TNavigator input files that serve as templates for event data:
 
@@ -705,7 +681,7 @@ WCONPROD
 
 Parameters like `oil_rate_max` get substituted with values from the query.
 
-### Validation and Error Handling
+<em>**Validation and Error Handling**</em>
 
 The system provides comprehensive validation:
 
@@ -715,10 +691,94 @@ The system provides comprehensive validation:
 - **Date Constraints**: Events validated against date range limits
 - **Template Consistency**: Parameter names verified in template files
 
+<br>
+<br>
+
+## Internal Configuration
+
+The library uses YAML configuration files for parser setup:
+
+```yaml
+# config/config.yaml
+MainParserConfig:
+  end_keyword: END
+  extensions:
+    - ".vfp"
+    - ".VFP"
+    - ".inc"
+    - ".INC"
+    - ".grdecl"
+    - ".GRDECL"
+    - ".map"
+    - ".MAP"
+    - ".data"
+    - ".DATA"
+  parsers:
+    - UDQParser
+    - PVDGParser
+    - WECONParser
+    - WEFACParser
+    - VFPPRODParser
+    - INCLUDEParser
+    - GRUPTREEParser
+    - DATESParser
+    - TSTEPParser
+    - RESTARTParser
+    - WELSPECSParser
+    - BRANPROPParser
+    - COMPDATParser
+    - WPIMULTParser
+    - WDFACParser
+    - WCONPRODParser
+    - COMPLUMPParser
+    - WVFPDPParser
+
+RSMParserConfig:
+  extensions:
+    - '.rsm'
+    - '.RSM'
+  end_of_file_offset: 1
+
+
+RSMParserParallelConfig:
+  extensions:
+    - '.rsm'
+    - '.RSM'
+
+UNSMRYParserConfig:
+  extensions:
+    - '.smspec'
+    - '.unsmry'
+    
+# Res file parsers configurations
+OutsolTsMapsResParserConfig:
+  resfile_name: outsol_ts_maps
+RunStatResParserConfig:
+  resfile_name: run_stat
+WellResParserConfig:
+  resfile_name: well
+ConnResParserConfig:
+  resfile_name: conn
+GroupResParserConfig:
+  resfile_name: group
+NetworkResParserConfig:
+  resfile_name: network
+
+# Keyword configurations
+PVDGParserConfig:
+  keyword: PVDG
+WECONParserConfig:  
+  keyword: WECON
+```
+
+<br>
+<br>
+
+
 
 ## Development
 
-### Setup Development Environment
+### 1. Setup Development Environment
 
 ```bash
 # Install development dependencies
@@ -729,7 +789,7 @@ pip install -e ".[dev,docs]"
 pre-commit install
 ```
 
-### Code Quality
+### 2. Code Quality
 
 ```bash
 # Run all checks
@@ -743,7 +803,10 @@ make format        # Format code
 make type-check    # Run type checking
 ```
 
-### Testing (WARNING - needs a review)
+### 3. Testing (WARNING - needs a review)
+
+>[!WARNING]
+> The related commnads might not work correctly, do not cover all the possibilities of the library - a comprehensive refactoring is required
 
 ```bash
 # Run all tests
@@ -763,7 +826,7 @@ pytest tests/test_main_parser.py -v
 pytest tests/test_rsm_parser.py -v
 ```
 
-### Building and Publishing
+### 4. Building and Publishing
 
 ```bash
 # Build package
@@ -772,6 +835,9 @@ make build
 # Upload to PyPI (requires authentication)
 make upload
 ```
+
+<br>
+<br>
 
 ## Project Structure
 
@@ -785,9 +851,9 @@ omega-parser/
 │   ├── parsers/                  # Parser modules
 │   │   ├── __init__.py
 │   │   ├── base.py               # Base parser classes
-│   │   ├── main_parser.py        # TNavigator file parser
+│   │   ├── main_parser.py        # TNavigator .DATA file parser
 │   │   ├── settings.py           # Configuration management
-│   │   ├── keyword_parsers/      # TNavigator keyword parsers (18 parsers)
+│   │   ├── keyword_parsers/      # TNavigator keyword parsers (>67 parsers)
 │   │   │   ├── __init__.py
 │   │   │   ├── pvdg.py           # PVDG data parser
 │   │   │   ├── wecon.py          # Well constraints parser
@@ -796,7 +862,7 @@ omega-parser/
 │   │   │   ├── compdat.py        # Completion data
 │   │   │   ├── wconprod.py       # Well production control
 │   │   │   └── ...               # Other keyword parsers
-│   │   ├── extra_parsers/        # Additional file parsers
+│   │   ├── extra_parsers/        # Output file parsers
 │   │   │   └── rsm.py            # RSM summary file parser
 │   │   │   └── rsm_parallel.py   # RSM summary file parser with batched multiprocessing apporoach
 │   │   │   └── unsmry.py         # UNSMRY summary file parser
@@ -808,7 +874,7 @@ omega-parser/
 │   │       ├── well.py           # Well binary file parser
 │   │       ├── group.py          # Group binary file parser
 │   │       └── network.py        # Network binary file parser
-│   ├── context/                  # Context management
+│   ├── context/                  # Context management for .DATA files
 │   ├── cleaner/                  # TNavigator model data cleaning
 │   ├── query/                    # Query processing and event management
 │   │   ├── __init__.py           # Query module initialization
@@ -842,19 +908,16 @@ omega-parser/
 └── README.md                     # This file
 ```
 
-## Code Style
-
-This project uses:
-- **Black** for code formatting
-- **isort** for import sorting
-- **flake8** for linting
-- **mypy** for type checking
-- **pre-commit** hooks for automated checks
+<br>
+<br>
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the **[LICENSE](LICENSE)** file for details.
+
+<br>
+<br>
 
 ## Changelog
 
-All major changes between versions are listed in [CHANGELOG.md](CHANGELOG.md) 
+All major changes between versions are listed in  **[CHANGELOG.md](CHANGELOG.md)** 

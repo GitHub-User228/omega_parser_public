@@ -350,3 +350,17 @@
     - `network.res`: `NetworkResParser`
     - `run_stat.res`: `RunStatResParser`
 - Several updates in `README.md`
+
+## v0.9.5
+
+- Keywords parsers fixes:
+  - Changed column dtype from `bool` to `pd.BooleanDtype()` for every boolean column
+  - Corrected the default value for boolean columns if the original value is string (e.g. False instead of 'NO')
+  - Moved string to boolean mapping (e.g. 'NO' to False) before dtype adjustments
+- Updates for `get_merger` function in [math.py](./src/omega_parser/utils/math.py):
+  - Added skip_nan argument for mergers that are created from starting indices - if enabled then the aggregation function will skip nan values within groups
+  - Added new aggregation types: `first`, `mode`, `median`
+- Other changes:
+  - Added handle_zeros argument to `_linear_interp` function of `PreprocessingComponent` of `pipeline1` - if enabled then all non-trailing zeros within groups are replaced with a value via linear interpolation or bfill
+  - Fixed a bug in `_adjust_dtypes` function of `ContextManager` when a requested `float_precision` dtype was not applied for `float` columns
+  - Fixed a bug in `_prepare_scenario_data` function of `Dataset` when `well` level data was not sorted by `well_id`

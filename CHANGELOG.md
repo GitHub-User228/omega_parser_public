@@ -112,7 +112,7 @@
 - Added support for keyword parsers related to blocks coordinates and their features (COORD, MAPAXES, ZCORN, ACTNUM, NTG)
 - Added mapaxes and grid_specs sections to the data updated in the ContextManager. Grid data also contains info about volume and coordinates of each block (it is calculated) 
 - Reworked RSMDataExtractor
-- Reworked RSMParser so that it is compatitable with different RSM file formats
+- Reworked RSMParser so that it is compatible with different RSM file formats
 
 ## v0.6.0
 
@@ -120,7 +120,7 @@
 - ContextManager was adapted to the changes in the parser
 - A few new keywords can be parsed now
 - Method save of ParsedContent is disabled for now since it needs adaptation to the changes in the parsers.
-- Infinite loop occuring in RSMParser has been removed
+- Infinite loop occurring in RSMParser has been removed
 
 ## v0.6.1
 
@@ -137,7 +137,7 @@
 
 ## v0.6.3
 
-- Opimized RSMParserParallel - now it works roughly 4x faster than RSMParser
+- Optimized RSMParserParallel - now it works roughly 4x faster than RSMParser
 
 ## v0.6.4
 
@@ -166,7 +166,7 @@
   - Fixed CDFAC calculation
   - Grid specs data not is added at the starting timestamp and not during collection process
   - Block size (DX, DY, DZ) can be calculated now.
-  - Simplified initialization proccess with default values for schedule data
+  - Simplified initialization process with default values for schedule data
   - Some other code simplifications
 - Rework of ContextContent
   - Created a separate class to store non-schedule data: NonScheduleContextContent
@@ -174,12 +174,12 @@
   - ContextContent now stores data using classes above
 - Code fixes due to the renaming (x -> I, y -> J, z -> K)
 - Bug fixes in PVDG and PVTW parsers
-- Documentaion fix in certain places
+- documentation fix in certain places
 
 ## v0.7.2
 
 - Bug fix in RSMParserParallel
-- Bug fix in ContextManager (missing data occured for SATNUM in perf data)
+- Bug fix in ContextManager (missing data occurred for SATNUM in perf data)
 - Fixed CEFR calculation in ContextManager
 
 
@@ -193,8 +193,8 @@
 - Formatted the code where necessary
 - Added FIPNUM keyword parser
 - Fixed a bug in `RSMParallelParser`
-- Fixed a bug in `RSMDataExttactor`
-- Added new extractor function `extract_region_data` to `RSMDataExttactor`
+- Fixed a bug in `RSMDataExtractor`
+- Added new extractor function `extract_region_data` to `RSMDataExtractor`
 
 ## v0.7.5
 
@@ -227,13 +227,13 @@
 - Fixed a docstring typo in `OutsolTsMapsParser`
 - Changed column naming in parsers: `well_cond` to `WSTAT`, `well_policy` to `WMCTL`, `perf_cond` to `CSTAT`
 - Added `pipeline1` pipeline which parses and preprocesses TNavigator data.
-- Added dtype adjustment postprocessing for most of keyword parsers (where it was neccessary)
+- Added dtype adjustment postprocessing for most of keyword parsers (where it was necessary)
 - Reworked `ContextManager`:
   - added support for handling ground network related data: `gruptree_graph`, `branprop_graph`, `network_edge_data`, `network_node_data` 
-  - added dtype adjustments when the schedule data is intialized
+  - added dtype adjustments when the schedule data is initialized
   - added dtype adjustments for processed data at the end of `.accumulate` method
   - now `grid_specs` data is not added to `perforation_data` dataframe (in order to save memory)
-  - added `verbose` atrribute so that the logging level can be modified
+  - added `verbose` attribute so that the logging level can be modified
   - changed the output of `.accumulate` method - now key is an attribute from `DataGroups`, not `string`
 - Minor adjustments in the utilities that are used in `ContextManager`
 - `ParsingUtils` now removes odd patterns defined in `ODD_PATTERNS` in `utils/constant.py`
@@ -255,7 +255,7 @@
 - Reworks in `ResultsParsingComponent` of `pipeline1`:
   - `well_IJK` column is added to `perforation` data
   - blocks coordinates are now parsed and saved into a single .pkl file
-- Added a new component to `pipeline1`: `PreprocessingComponent` - it is desinged to merge and preprocess data from `ResultsParsingComponent` and `DatafileParsingComponent`
+- Added a new component to `pipeline1`: `PreprocessingComponent` - it is designed to merge and preprocess data from `ResultsParsingComponent` and `DatafileParsingComponent`
 - Now `UNSMRYDataExtractor` drops duplicated timestamps for `block` level data
 
 ## v0.9.0
@@ -284,8 +284,8 @@
 - Reworked `Dataset`:
   - Added `cumsum` `agg_type` option to a list of functions that can be applied for mergers from `get_merger`
   - Added region mapping features for `perforation` and `block` level data
-  - `features` now store data as `List[NDArray]` instead of `Dict[str, NDArray]` - basically, the features can be splitted into several groups and stored together in the same array. `features_idx` and `features_names` attributes are created in order to get the location of the features by their names
-  - Added `group_to_scenarios_mask` to `metadata` which helps to mark only valid scenarios for each perforation (i.e. not all perfortaions might exist for some scenarios)
+  - `features` now store data as `List[NDArray]` instead of `Dict[str, NDArray]` - basically, the features can be split into several groups and stored together in the same array. `features_idx` and `features_names` attributes are created in order to get the location of the features by their names
+  - Added `group_to_scenarios_mask` to `metadata` which helps to mark only valid scenarios for each perforation (i.e. not all perforations might exist for some scenarios)
   - `add_scenario` function is added - it can be used to add a new scenario to the `Dataset`
   - `add_extra_data` function is added - it can be used after adding scenarios data to add extra data to the dataset (like merging functions or region mappers)
 - `UNSMRYDataExtractor` now correctly returns extracted data if `keywords` is specified as `List[str]`
@@ -299,29 +299,29 @@
 - Improved `UNSMRYParser`:
   - You can now auto-delete auto-generated `smspec.csv` file - use `delete_parsed_smspec` argument when initializing the parser
   - You can now specify time bounds via `start_timestamp` and `end_timestamp` within which the data is kept (in `read` and `_read_unsmry`). If specified, the binary data outside the time bounds is ignored and not loaded into RAM at all
-  - Some code quality improvments in `_read_unsmry`
+  - Some code quality improvements in `_read_unsmry`
 - Improved `UNSMRYDataExtractor`:
-  - Added a possibility to adjust the float precision (WARNING: this is purely a cosmetic thing since the max float precition of the real data is `float32`) - use `float_precision` argument when calling `extract_data` (two available options: `float32` and `float64`)
-  - Rewroked the code of `extract_data` so that it properly handles the case when the passed parsed data is empty
+  - Added a possibility to adjust the float precision (WARNING: this is purely a cosmetic thing since the max float precision of the real data is `float32`) - use `float_precision` argument when calling `extract_data` (two available options: `float32` and `float64`)
+  - Reworked the code of `extract_data` so that it properly handles the case when the passed parsed data is empty
 - Improved `ContextManager`
   - The manager can now retrieve the float precision from the passed parsed data and follow that precision in all float-related calculations
   - Now the manager calculates geometric transmissibility between blocks in all directions for all blocks (`TRANx+`, ..., `TRANz-`) - this new data is added to `context.GRID` dataframe. You can check new corresponding functions that are used to calculate in `utils/grid.py`: `calculate_contact_squares`, `calculate_contact_centres`, `calculate_contact_normals`, `calculate_geometric_transmissibility`
 - Improved `Pipeline1`
   - Added `end_timestamp` basic configuration parameter
-  - `DatafileParsingComponent` supports float precition adjustment via the configuration
-  - `ResultsParsingComponent` supports float precition adjustment via the configuration
+  - `DatafileParsingComponent` supports float precision adjustment via the configuration
+  - `ResultsParsingComponent` supports float precision adjustment via the configuration
   - `ResultsParsingComponent` correctly handles a case when an empty data is passed through `_add_well_IJK`
   - `ResultsParsingComponent` supports a new configuration parameter `delete_parsed_smspec` (see changes in `UNSMRYParser`)
   - `ResultsParsingComponent` supports a new configuration parameter `separate_block_features` which tells the component to parse and save the data for each block level feature separately
   - `PreprocessingComponent` supports `VFPData` and `UDQData` for several functions
   - Added `_time_weighted_avg` function to `PreprocessingComponent` - calculates a timedelta averaged feature for new timestamps added to `BlockData` (`_add_timestamps` must be applied beforehand for `BlockData`)
-  - Quality of code improvments in `_merge` and `_read_data_source` function of `PreprocessingComponent`
+  - Quality of code improvements in `_merge` and `_read_data_source` function of `PreprocessingComponent`
 
 
 ## v0.9.3
 
 - The error message is logged and returned for raising via a single function `error` from `utils.common`
-- Improvments in `Dataset`:
+- improvements in `Dataset`:
   - `Dataset` can be initialized from a specified `ContextContent` binary pkl file via `cc_filename` argument added to `add_scenarios` and `add_scenario` functions
   - Added `perforation` to `block` merger to default mergers (if necessary id data exists for both levels)
 - Changes in `UNSMRYDataExtractor`:
@@ -335,7 +335,7 @@
   - Added previously mentioned new arguments `error_if_keyword_not_exist`, `create_empty_column_if_not_exists` and `empty_value` to `ResultsParsingComponentConfig`
   - `force_original_bounds` argument can now be specified for function `_add_timestamps` in `PreprocessingComponent`
   - Initial pressure data is now automatically added to `ContextContent` file when `ResultsParsingComponent` is called - a new file is created called `ContextContentNew.pkl` with this feature added to a forecast `GRID` dataframe. Also the history `GRID` is removed from the new file and data only for the active blocks is kept in the forecast `GRID`. `ContextContentNew.pkl` filename is used by default in the `Dataset` during initialization.
-- Added a new code section with an implementaion of a numerical schema that is used in the `reservoir` in the `TNavigator`. Check `reservoir.equation.right_side`, `reservoir.equation.left_side` and `reservoir.equation.residual` in order to compute schema related data for all blocks. The functions are desgined to work with either `numpy` or `torch` arrays for either `2D` or `3D` case.
+- Added a new code section with an implementation of a numerical schema that is used in the `reservoir` in the `TNavigator`. Check `reservoir.equation.right_side`, `reservoir.equation.left_side` and `reservoir.equation.residual` in order to compute schema related data for all blocks. The functions are designed to work with either `numpy` or `torch` arrays for either `2D` or `3D` case.
 
 ## v0.9.4
 
@@ -364,3 +364,44 @@
   - Added handle_zeros argument to `_linear_interp` function of `PreprocessingComponent` of `pipeline1` - if enabled then all non-trailing zeros within groups are replaced with a value via linear interpolation or bfill
   - Fixed a bug in `_adjust_dtypes` function of `ContextManager` when a requested `float_precision` dtype was not applied for `float` columns
   - Fixed a bug in `_prepare_scenario_data` function of `Dataset` when `well` level data was not sorted by `well_id`
+
+## v0.9.6
+
+- `ContextManager` updates:
+  - Removed two data levels: `group`, `edge`
+  - Added three data levels: 
+    `group_gruptree` - group data on `GRUPTREE` graph
+    `group_branprop` - group data on `BRANPROP` graph
+    `meta` - data that is not related to any object (e.g. perforation, well, group, ...)
+- `MainParser` updates:
+  - Added preprocessing part right before applying a keyword parser that removes trailing lines '/' keeping only a single one
+- Keyword parsers updates:
+  - Renamed `child_id` to `group_id` & made `group_id` as an indexer instead of (`child_id`, `parent_id`)
+  - Upper cased `well_id` or related features that name a well where it was missing
+  - Removed not-null filtering along `group_id` (`GEFAC`)
+  - Specified dtypes and added a constraint for a max value of `netbalance_maxiter` (`NETBALAN`)
+  - Upper cased `group_id` or related features that name a node
+  - Changed the output of certain keywords that are not related to any object (`WORKLIM`, `COMPOFF`)
+  - Upper cased `WSTAT` (`WCONHIST`)
+  - Renamed certain columns (`GCONPROD`)
+- Updates in `pipeline1`
+  - Added a new component named `DatasetCreatingComponent` that is applied after `PreprocessingComponent` - it creates `Dataset` right away on the parsed data given the config
+- Changes in `PreprocessingComponent` of `pipeline`:
+  - Added `.reset_index` whenever a DataFrame table is modified row-wise
+  - Added `float_precision` argument to `add_time` function
+  - Replaced the type cast to `float32` with a proper one that uses a float type of the existing data so that the original float type is preserved
+  - `_read_data_source` can now handle a case when `mnemonics` are not specified and separated block data is to be read - the mnemonics are derived from what is stored
+  - Replaced `_handle_conn_prod` and `_handle_geff_weff` functions with `_handle_geff_weff_prod` function which uses DFS approach instead of matrices multiplications
+  - Reworked `_calculate_wgeff` function - DFS approach is used instead of matrices multiplications
+  - Added `_calculate_cumprod_from_prod` function which recalculates cumulative production of a fluid using the production of it
+  - Added `_calculate_prod_from_cumprod` function which recalculates production of a fluid using the cumulative production of it
+- `Dataset` updates:
+  - Time-related features are now stored as a Dict[str, NDArray] instead of List[NDArray] with extra mapping attributes (`features_idx`, `features_names`)
+  - Removed `group` and `edge` level datasets
+  - Added `meta`, `group_gruptree` and `group_branprop` level datasets
+  - Kept merger functions only between `block`, `perforation` and `well` data levels
+- Other updates:
+  - Added `check_inf` utility function
+  - Misspelled words corrected
+  - Updated `README.md`
+

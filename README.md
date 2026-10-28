@@ -10,7 +10,7 @@
 
 ## Description
 
-A Python library for cleaning, parsing TNavigator input and output files with possible data extraction and data managment with a comprehensive configuration support.
+A Python library for cleaning, parsing TNavigator input and output files with possible data extraction and data management with a comprehensive configuration support.
 
 <br>
 
@@ -173,6 +173,7 @@ data = parser.read(
 <details>
 
 <summary> <em>About <code>blocks</code>, <code>features</code>, <code>dimensions</code> arguments</em> (click to expand) </summary>
+<br>
 
 > Values for  `blocks`, `features`, `dimensions` arguments must be determined manually from what was specified in `.DATA` file for `RPTRST` and `RPTMAPS` keywords
 
@@ -198,6 +199,7 @@ data = parser.read(offset=10)
 <details>
 
 <summary> <em>About <code>offset</code> parameter</em> (click to expand) </summary>
+<br>
 
 > The same idea can be used for other parsers but with a different `offset` value. Check the type annotation for `offset` argument in each case in order to determine the possible values - they may be different depending on the number of `objects` (e.g. wells, connections, groups, ...), though the exact pattern rule can not be determined as for now.
 
@@ -212,9 +214,9 @@ The ContextManager provides sequential processing capabilities for TNavigator si
 
 <em>**Key features**</em>: 
 - **State Management**: Tracks simulation state across timestamps with proper RESTART handling
-- **Group, Well and Perforation Management**: Monitors group, well and perforation specifications, constraints, and production controls
-- **Network Topology**: Maintains reservoir network structure using NetworkX DiGraph
+- **Group, Well, Perforation, Meta Data Management**: Monitors group (GRUPTREE, BRANPROP graphs), well and perforation specifications, constraints, and production controls. Also supports meta level mnemonics
 - **VFP Tables**: Manages vertical flow performance tables throughout simulation
+- **UDQ**: Manages `UDQ`s throughout simulation
 - **Data Validation**: Ensures consistency and validates data at each simulation step
 
 <em>**Usage Example**</em>:
@@ -272,7 +274,7 @@ cm.multistep(end_timestamp='2024-01-01')
 cm.multistep()
 
 # Accumulate specific data for all timestamps
-# This requires the context to be intialized again
+# This requires the context to be initialized again
 cm = ContextManager.from_datafile(
     data_dir=Path("data/"), 
     rel_file_path="simulation.data"
@@ -280,10 +282,11 @@ cm = ContextManager.from_datafile(
 data = cm.accumulate()
 
 # Access accumulated data
+print(f"Meta data: {data[DatafileGroups.meta]}")
 print(f"Well data: {data[DatafileGroups.well]}")
 print(f"Perforation data: {data[DatafileGroups.perforation]}")
-print(f"Group data: {data[DatafileGroups.group]}")
-print(f"Edge data: {data[DatafileGroups.edge]}")
+print(f"Group data (GRUPTREE graph): {data[DatafileGroups.group_gruptree]}")
+print(f"Group data (BRANPROP graph): {data[DatafileGroups.group_branprop]}")
 print(f"VFP data: {data[DatafileGroups.vfp]}")
 print(f"UDQ data: {data[DatafileGroups.udq]}")
 ```
@@ -303,8 +306,7 @@ python3 -m omega_parser.pipelines.run -p pipeline1 -cf config.yaml
 
 #### I. Pipeline 1
 
-Pipeline1 is designed to parse raw `.DATA` and `UNSMRY` files for either one scenario or more if they are 
-based on the same history model. 
+Pipeline1 is designed to parse raw `.DATA` and `UNSMRY` files for either one scenario or more if they are based on the same history model. Additionally, supports `Dataset` creation from parsed data (`Dataset` itself is described later)
 
 For each scenario the following files must exist:  
 - `.DATA` files and all included files
@@ -341,6 +343,10 @@ components:
     verbose: 1
     # Adjust the float precision - float32 or float64
     float_precision: float64
+    # Truncate the naming mnemonics (like well_id, group_id)
+    name_max_length: 8
+    # path to a .DATA file for a history scenario relative to `DatafileCleaningComponent.data_dir`
+    history_rel_dir: scenarios/history.DATA
     # path to a .DATA file for each scenario relative to `DatafileCleaningComponent.data_dir`
     scenarios_rel_dir:  
       v1: scenarios/v1_scen.DATA
@@ -349,6 +355,8 @@ components:
     # what mnemonics to parse for each data level (id columns are excluded 
     # here since they are parsed by default)
     mnemonics: 
+      meta:
+        - COMPOFF
       well:
         - well_parent
         - well_I
@@ -371,16 +379,19 @@ components:
         - CEFR
         - CSTAT
         - exists
-      network_node:
+      group_gruptree:
+        - GEFF
+      group_branprop:
         - PRES
         - node_fitting_flag
         - alq_flag
         - node_fitting_group_id
         - group_id_for_source_or_sink_node
         - network_type
-      network_edge:
         - VFP_id
         - ALQ
+      udq: [] # keep this way in order to get UDQ data
+      vfp: [] # keep this way in order to get VFP data
 
   # Parses UNSMRY and SMSPEC results files, creating a separate .parquet 
   # or .pkl file for each data level (e.g. well, perforation)
@@ -393,9 +404,17 @@ components:
     float_precision: float32
     # Whether to delete autogenerated smpspec.csv on completion
     delete_parsed_smspec: True
-    # Whether to process each block feature separetely 
+    # Whether to process each block feature separately 
     # (works when block data is parsed in a separate group - like in this example)
     separate_block_features: False
+    # Whether to raise an error if some keywords do not exist in the parsed UNSMRY data
+    error_if_keyword_not_exist: False
+    # Whether to create empty column for a mnemonic if it does not exist
+    create_empty_column_if_not_exists: True
+    # Value to use for empty columns
+    empty_value: 0
+    # Path of a txt file with blocks coordinates. Used whenever a block level data is parsed
+    blocks_coordinates_file_path: /home/username/project1/tnav_model_data/blocks.txt
     # path to a directory with results files
     data_dir: /home/username/project1/tnav_model_data/scenarios/RESULTS 
     # path to a directory with results files for history relative to `data_dir`
@@ -426,7 +445,6 @@ components:
       - [block]
 
   # Preprocesses data from DatafileParsingComponent and ResultsParsingComponent
-  # Optionally adds and keeps only certain timestamps - gaps can also be handled
   PreprocessingComponent:
     save_dir: 'preprocessed'
     skip: False
@@ -462,6 +480,18 @@ components:
           - method: _save_table
             kwargs:
               table_name: block
+
+  # Creates Dataset(s) from parsed and preprocessed data earlier
+  DatasetCreatingComponent:
+    save_dir: 'datasets'
+    skip: False
+    # Whether to create a separate Dataset per scenario
+    separate: True
+    # Dataset data schema (check Dataset section later for more info)
+    data_schema: ...
+    # What files to use when creating a Dataset (check Dataset section later for more info)
+    path_config: ...
+
 ```
 </details>
 
@@ -482,8 +512,12 @@ This config defined data schema for `block`, `perforation`, `well`, `group` and 
 
 
 ```yaml
+float_precision: float64
+meta:
+  extra_metadata_features: []
+  features: [COMPOFF]
 block: 
-  extra_metadata_features: [SWATINIT, SWL, SWU] # Those features are derived from ContextContext.pkl
+  extra_metadata_features: [SWATINIT, SWL, SWU] # These features are derived from ContextContextNew.pkl
   features: [BSWAT] 
 perforation:
   extra_metadata_features: [I, J, K, well_id]
@@ -491,10 +525,10 @@ perforation:
 well:
   extra_metadata_features: [well_parent]
   features: [WEFF, well_id]
-group: 
+group_gruptree: 
   extra_metadata_features: []
   features: [GEFF]
-edge: 
+group_branprop: 
   extra_metadata_features: []
   features: [VFP_id, ALQ]
 ```
@@ -511,12 +545,15 @@ This config file defines directories from which to read the data. The configurat
 ```yaml
 data_dir: /artifacts/data
 sources_path_config:
-  edge:
+  meta:
     origin: PREPROCESSED
-    filename: edge.parquet
-  group: 
+    filename: meta.parquet
+  group_gruptree:
     origin: PREPROCESSED
-    filename: group.parquet
+    filename: group_gruptree.parquet
+  group_branprop: 
+    origin: PREPROCESSED
+    filename: group_branprop.parquet
   well:
     origin: PREPROCESSED
     filename: well.parquet
@@ -526,9 +563,6 @@ sources_path_config:
   block: 
     origin: PREPROCESSED
     filename: block.pkl
-  graph: 
-    origin: DATA
-    filename: graph.pkl
   vfp: 
     origin: DATA
     filename: vfp.pkl
@@ -556,7 +590,7 @@ dataset.add_scenario('v2')
 dataset.add_scenarios(['v3', 'v4'])
 ```
 
-Additionally, `Dataset` has `persistent_data` which is derived from `ContextContent.pkl` stored in `data_dir`
+Additionally, `Dataset` has `persistent_data` which is derived from `ContextContentNew.pkl` stored in `data_dir`
 
 <br>
 
@@ -804,7 +838,7 @@ make type-check    # Run type checking
 ### 3. Testing (WARNING - needs a review)
 
 >[!WARNING]
-> The related commnads might not work correctly, do not cover all the possibilities of the library - a comprehensive refactoring is required
+> The related commands might not work correctly, do not cover all the possibilities of the library - a comprehensive refactoring is required
 
 ```bash
 # Run all tests
@@ -862,7 +896,7 @@ omega-parser/
 │   │   │   └── ...               # Other keyword parsers
 │   │   ├── extra_parsers/        # Output file parsers
 │   │   │   └── rsm.py            # RSM summary file parser
-│   │   │   └── rsm_parallel.py   # RSM summary file parser with batched multiprocessing apporoach
+│   │   │   └── rsm_parallel.py   # RSM summary file parser with batched multiprocessing approach
 │   │   │   └── unsmry.py         # UNSMRY summary file parser
 │   │   └── resfile_parsers/      # RESULTS files parsers
 │   │       ├── base.py           # Base parser
